@@ -24,6 +24,7 @@ ambient_light_source = 3
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1_y2h0i")
+_flockSize = 250
 
 [node name="StaticBody3D" type="StaticBody3D" parent="."]
 
