@@ -1,10 +1,8 @@
-[gd_scene load_steps=6 format=3 uid="uid://byxnm5tmp038x"]
+[gd_scene load_steps=5 format=3 uid="uid://byxnm5tmp038x"]
 
-[ext_resource type="Script" path="res://Scripts/Boid.cs" id="1_nyvhf"]
+[ext_resource type="Script" path="res://Scripts/Nodes/Boid.cs" id="1_nyvhf"]
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_7rs2f"]
-
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_wpy5i"]
+[sub_resource type="SphereMesh" id="SphereMesh_m1myn"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_uwt4i"]
 shading_mode = 0
@@ -15,16 +13,13 @@ material = SubResource("StandardMaterial3D_uwt4i")
 shape = 0
 size = 0.194
 
-[node name="Boid" type="CharacterBody3D"]
+[node name="Boid" type="Node3D"]
 script = ExtResource("1_nyvhf")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
-shape = SubResource("CapsuleShape3D_7rs2f")
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_m1myn")
+skeleton = NodePath("")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="CollisionShape3D"]
-mesh = SubResource("CapsuleMesh_wpy5i")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="CollisionShape3D/MeshInstance3D"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="MeshInstance3D"]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 1.02308)
 mesh = SubResource("RibbonTrailMesh_droxc")

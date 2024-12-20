@@ -1,6 +1,7 @@
-[gd_scene load_steps=8 format=3 uid="uid://dkn1jlfvehcd8"]
+[gd_scene load_steps=9 format=3 uid="uid://dkn1jlfvehcd8"]
 
 [ext_resource type="Script" path="res://Scripts/Main.cs" id="1_y2h0i"]
+[ext_resource type="Script" path="res://Scripts/FpsLabel.cs" id="2_gw580"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_i1d7a"]
 size = Vector3(100, 1, 100)
@@ -24,7 +25,7 @@ ambient_light_source = 3
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1_y2h0i")
-_flockSize = 250
+_flockSize = 500
 
 [node name="StaticBody3D" type="StaticBody3D" parent="."]
 
@@ -42,3 +43,22 @@ environment = SubResource("Environment_x1thy")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.397148, 0.917755, 7.629e-10, 0.00800884, -0.00346574, 0.999962, 0.91772, -0.397133, -0.00872656, 0, 0, 0)
+
+[node name="UI" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="FpsLabel" type="Label" parent="UI"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -20.0
+offset_right = 20.0
+offset_bottom = 23.0
+grow_horizontal = 2
+script = ExtResource("2_gw580")
