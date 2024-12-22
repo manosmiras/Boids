@@ -22,3 +22,8 @@ window/vsync/vsync_mode=0
 [dotnet]
 
 project/assembly_name="Boids"
+
+[rendering]
+
+anti_aliasing/quality/msaa_3d=3
+anti_aliasing/quality/screen_space_aa=1

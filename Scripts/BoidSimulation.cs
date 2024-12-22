@@ -7,22 +7,25 @@ public partial class BoidSimulation : Node
 {
     [Export] private float _maxSpeed = 2.0f;
     [Export] private float _maxForce = 0.03f;
-    [Export] private float _desiredSeparation = 5.0f;
-    [Export] private float _neighborDistance = 20f;
+    [Export] private float _desiredSeparation = 50;
+    [Export] private float _desiredAlignment = 20f;
+    [Export] private float _desiredCoherence = 20f;
     [Export] private int _flockSize = 100;
     [Export] private float _boundaryThreshold = 10f;
-    [Export] private float _boundaryForceFactor = 5f;
+    [Export] private float _boundaryForceFactor = 1f;
     [Export] private Vector3 _minBounds = new(-100f, -25f, -50f);
     [Export] private Vector3 _maxBounds = new(100f, 25f, 50f);
     
     private BoidComponent[] _boids;
     private Node3D[] _boidNodes;
+    private MultiMeshInstance3D _multiMeshInstance;
+    private MultiMesh _multiMesh;
 
     public override void _Ready()
     {
         _boids = new BoidComponent[_flockSize];
         _boidNodes = new Node3D[_flockSize];
-        var boidScene = GD.Load<PackedScene>("res://Boid.tscn");
+        
         for (var i = 0; i < _flockSize; i++)
         {
             _boids[i] = new BoidComponent
@@ -35,17 +38,29 @@ public partial class BoidSimulation : Node
                 Velocity = Vector3.Zero
             };
             
-            var boidNode = (Node3D)boidScene.Instantiate();
+            /*var boidNode = (Node3D)boidScene.Instantiate();
             _boidNodes[i] = boidNode;
             boidNode.Position = _boids[i].Position;
-            AddChild(boidNode);
+            AddChild(boidNode);*/
+        }
+        var boidScene = GD.Load<PackedScene>("res://Boid.tscn");
+        _multiMeshInstance = boidScene.Instantiate<MultiMeshInstance3D>();
+        _multiMesh = _multiMeshInstance.Multimesh;
+        _multiMesh.TransformFormat = MultiMesh.TransformFormatEnum.Transform3D;
+        _multiMesh.InstanceCount = _flockSize;
+        AddChild(_multiMeshInstance);
+        for (int i = 0; i < _flockSize; i++)
+        {
+            Transform3D xform = Transform3D.Identity;
+            xform.Origin = _boids[i].Position;
+            _multiMesh.SetInstanceTransform(i, xform);
         }
     }
     
     public override void _Process(double delta)
     {
         Simulate((float)delta);
-        UpdateNodes();
+        UpdateVisuals();
     }
     
     private void Simulate(float delta)
@@ -57,15 +72,29 @@ public partial class BoidSimulation : Node
         });
     }
     
-    private void UpdateNodes()
+    private void UpdateVisuals()
     {
-        for (var i = 0; i < _boids.Length; i++)
+        for (var i = 0; i < _flockSize; i++)
         {
-            _boidNodes[i].Position = _boids[i].Position;
-            var target = _boids[i].Position - _boids[i].Velocity;
-            if(target !=  _boidNodes[i].Position)
-                _boidNodes[i].LookAt(target, Vector3.Up);
+            var currentBoid = _boids[i];
+            var transform = Transform3D.Identity;
+            transform.Origin = currentBoid.Position;
+            if (currentBoid.Velocity.Length() > 0)
+            {
+                var forward = currentBoid.Velocity.Normalized();
+                var basis = BuildLookAtBasis(forward, Vector3.Up);
+                transform.Basis = basis;
+            }
+            _multiMesh.SetInstanceTransform(i, transform);
         }
+    }
+    
+    private Basis BuildLookAtBasis(Vector3 forward, Vector3 up)
+    {
+        forward = forward.Normalized();
+        var xAxis = up.Cross(forward).Normalized();
+        var yAxis = forward.Cross(xAxis).Normalized();
+        return new Basis(xAxis, yAxis, forward);
     }
 
     private Vector3 CalculateVelocities(int currentBoidIndex)
@@ -84,8 +113,8 @@ public partial class BoidSimulation : Node
             var distance = currentBoid.Position.DistanceTo(otherBoid.Position);
             
             AccumulateVelocity(distance, _desiredSeparation, currentBoid, otherBoid, ref separationVelocity, ref separationCount);
-            AccumulateVelocity(distance, _neighborDistance, currentBoid, otherBoid, ref alignmentVelocity, ref alignmentCount);
-            AccumulateVelocity(distance, _neighborDistance, currentBoid, otherBoid, ref cohesionVelocity, ref cohesionCount);
+            AccumulateVelocity(distance, _desiredAlignment, currentBoid, otherBoid, ref alignmentVelocity, ref alignmentCount);
+            AccumulateVelocity(distance, _desiredCoherence, currentBoid, otherBoid, ref cohesionVelocity, ref cohesionCount);
         }
         NormalizeVelocity(currentBoid, ref separationVelocity, ref separationCount);
         NormalizeVelocity(currentBoid, ref alignmentVelocity, ref alignmentCount);

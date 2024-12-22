@@ -1,0 +1,13 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://5xce8ufiv5gr"]
+
+[ext_resource type="Shader" path="res://FishShader.gdshader" id="1_wguy4"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_wguy4")
+shader_parameter/time_scale = 3.5
+shader_parameter/side_to_side = 0.0
+shader_parameter/pivot = -1.471
+shader_parameter/wave = 0.892
+shader_parameter/twist = 1.369
+shader_parameter/fish_color = Color(1, 1, 1, 1)

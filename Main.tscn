@@ -1,8 +1,9 @@
-[gd_scene load_steps=7 format=3 uid="uid://dkn1jlfvehcd8"]
+[gd_scene load_steps=8 format=3 uid="uid://dkn1jlfvehcd8"]
 
 [ext_resource type="Script" path="res://Scripts/Main.cs" id="1_y2h0i"]
 [ext_resource type="Script" path="res://Scripts/FpsLabel.cs" id="2_gw580"]
 [ext_resource type="PackedScene" uid="uid://baq3mefssbevx" path="res://BoidSimulation.tscn" id="3_3hhvb"]
+[ext_resource type="ArrayMesh" uid="uid://j67lor4m4tyc" path="res://Meshes/Fish.res" id="4_mboe1"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ygyq8"]
 
@@ -10,9 +11,16 @@
 sky_material = SubResource("ProceduralSkyMaterial_ygyq8")
 
 [sub_resource type="Environment" id="Environment_x1thy"]
-background_mode = 2
+background_mode = 1
+background_color = Color(0.219608, 0.435294, 0.6, 1)
 sky = SubResource("Sky_21kg6")
 ambient_light_source = 3
+fog_enabled = true
+fog_light_color = Color(1, 1, 1, 1)
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.0194
+volumetric_fog_albedo = Color(0.282986, 0.538978, 0.758429, 1)
+volumetric_fog_emission = Color(0.227511, 0.631193, 0.79032, 1)
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1_y2h0i")
@@ -45,5 +53,42 @@ offset_bottom = 23.0
 grow_horizontal = 2
 script = ExtResource("2_gw580")
 
+[node name="Controls" type="VBoxContainer" parent="UI"]
+layout_mode = 1
+offset_right = 200.0
+offset_bottom = 647.565
+
+[node name="CoherenceLabel" type="Label" parent="UI/Controls"]
+layout_mode = 2
+text = "Coherence"
+
+[node name="CoherenceSlider" type="HSlider" parent="UI/Controls"]
+layout_mode = 2
+
+[node name="SeparationLabel" type="Label" parent="UI/Controls"]
+layout_mode = 2
+text = "Separation"
+
+[node name="SeparationSlider" type="HSlider" parent="UI/Controls"]
+layout_mode = 2
+
+[node name="AlignmentLabel" type="Label" parent="UI/Controls"]
+layout_mode = 2
+text = "Alignment"
+
+[node name="AlignmentSlider" type="HSlider" parent="UI/Controls"]
+layout_mode = 2
+
 [node name="BoidSimulation" parent="." instance=ExtResource("3_3hhvb")]
-_flockSize = 1000
+_maxSpeed = 10.0
+_desiredSeparation = 20.0
+_desiredAlignment = 10.0
+_desiredCoherence = 10.0
+_flockSize = 1500
+_boundaryThreshold = 5.0
+_minBounds = Vector3(-100, -100, -100)
+_maxBounds = Vector3(100, 100, 100)
+
+[node name="Fish" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, -4)
+mesh = ExtResource("4_mboe1")
