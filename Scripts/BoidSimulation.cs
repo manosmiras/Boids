@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Godot;
 
 namespace Boids.Scripts;
@@ -43,17 +44,26 @@ public partial class BoidSimulation : Node
     public override void _Process(double delta)
     {
         Simulate((float)delta);
+        UpdateNodes();
     }
     
     private void Simulate(float delta)
     {
-        for (var i = 0; i < Boids.Length; i++)
+        Parallel.For(0, Boids.Length, i =>
         {
             Boids[i].Velocity += CalculateVelocities(i) * delta;
             Boids[i].Position += Boids[i].Velocity;
+        });
+    }
+    
+    private void UpdateNodes()
+    {
+        for (var i = 0; i < Boids.Length; i++)
+        {
             _boidNodes[i].Position = Boids[i].Position;
-            // Look forward
-            _boidNodes[i].LookAt(Boids[i].Position - Boids[i].Velocity, Vector3.Up);
+            var movingTowards = Boids[i].Position - Boids[i].Velocity;
+            if(movingTowards != Vector3.Zero)
+                _boidNodes[i].LookAt(movingTowards, Vector3.Up);
         }
     }
 
