@@ -2,140 +2,128 @@ using Godot;
 
 namespace Boids.Scripts;
 
-public class BoidSimulation
+public partial class BoidSimulation : Node
 {
     public BoidComponent[] Boids;
-    public float MaxSpeed = 12.0f;
-    public float MaxForce = 12.0f;
-    public float DesiredSeparation = 25f;
-    public float NeighborDistance = 50f;
+    [Export] private float _maxSpeed = 2.0f;
+    [Export] private float _maxForce = 0.03f;
+    [Export] private float _desiredSeparation = 25.0f;
+    [Export] private float _neighborDistance = 50f;
+    [Export] private float _turnFactor = 20.0f;
     
-    private float DesiredSeparationSquared => DesiredSeparation * DesiredSeparation;
-    private float NeighborDistanceSquared => NeighborDistance * NeighborDistance;
+    [Export] private int _flockSize = 100;
+    private Vector3 _minBounds = new(-25f, -25f, -25f);
+    private Vector3 _maxBounds = new(25f, 25f, 25f);
+    private Node3D[] _boidNodes;
 
-
-    public BoidSimulation(int count, Vector3 spawnBounds)
+    public override void _Ready()
     {
-        Boids = new BoidComponent[count];
-        for (var i = 0; i < count; i++)
+        Boids = new BoidComponent[_flockSize];
+        _boidNodes = new Node3D[_flockSize];
+        var boidScene = GD.Load<PackedScene>("res://Boid.tscn");
+        for (var i = 0; i < _flockSize; i++)
         {
             Boids[i] = new BoidComponent
             {
                 Position = new Vector3(
-                    (float)GD.RandRange(-1.0, 1.0) * spawnBounds.X,
-                    spawnBounds.Y,
-                    (float)GD.RandRange(-1.0, 1.0) * GD.Randf() * spawnBounds.Z
+                    (float)GD.RandRange(_minBounds.X, _maxBounds.X),
+                    (float)GD.RandRange(_minBounds.Y, _maxBounds.Y),
+                    (float)GD.RandRange(_minBounds.Z, _maxBounds.Z)
                 ),
                 Velocity = Vector3.Zero
             };
+            
+            var boidNode = (Node3D)boidScene.Instantiate();
+            _boidNodes[i] = boidNode;
+            boidNode.Position = Boids[i].Position;
+            AddChild(boidNode);
         }
     }
     
-    public void Simulate(float delta)
+    public override void _Process(double delta)
+    {
+        Simulate((float)delta);
+    }
+    
+    private void Simulate(float delta)
     {
         for (var i = 0; i < Boids.Length; i++)
         {
-            var separationVelocity = Separate(i);
-            var alignmentVelocity = Align(i);
-            var cohesionVelocity = Cohere(i);
-            Boids[i].Velocity += (separationVelocity + alignmentVelocity + cohesionVelocity) * delta;
-            Boids[i].Position += Boids[i].Velocity * delta;
+            Boids[i].Velocity += CalculateVelocities(i) * delta;
+            Boids[i].Position += Boids[i].Velocity;
+            _boidNodes[i].Position = Boids[i].Position;
+            // Look forward
+            _boidNodes[i].LookAt(Boids[i].Position - Boids[i].Velocity, Vector3.Up);
         }
     }
-    
-    private Vector3 Separate(int currentBoidIndex)
+
+    private Vector3 CalculateVelocities(int currentBoidIndex)
     {
         var currentBoid = Boids[currentBoidIndex];
         var separationVelocity = Vector3.Zero;
         var separationCount = 0;
+        var alignmentVelocity = Vector3.Zero;
+        var alignmentCount = 0;
+        var cohesionVelocity = Vector3.Zero;
+        var cohesionCount = 0;
         for(var j = 0; j < Boids.Length; j++)
         {
             if (currentBoidIndex == j) continue;
             var otherBoid = Boids[j];
-            var dist = currentBoid.Position.DistanceSquaredTo(otherBoid.Position);
-            if (dist > 0 && dist < DesiredSeparationSquared)
-            {
-                var diff = (currentBoid.Position - otherBoid.Position).Normalized() / dist;
-                separationVelocity += diff;
-                separationCount++;
-            }
-        }
-        
-        if(separationCount > 0)
-        {
-            separationVelocity /= separationCount;
-        }
+            var distance = currentBoid.Position.DistanceTo(otherBoid.Position);
             
-        if (separationVelocity.Length() > 0)
-        {
-            separationVelocity = separationVelocity.Normalized() * MaxSpeed;
-            separationVelocity -= currentBoid.Velocity;
-            separationVelocity = separationVelocity.LimitLength(MaxForce);
+            AccumulateVelocity(distance, _desiredSeparation, currentBoid, otherBoid, ref separationVelocity, ref separationCount);
+            AccumulateVelocity(distance, _neighborDistance, currentBoid, otherBoid, ref alignmentVelocity, ref alignmentCount);
+            AccumulateVelocity(distance, _neighborDistance, currentBoid, otherBoid, ref cohesionVelocity, ref cohesionCount);
         }
-
-        return separationVelocity;
+        NormalizeVelocity(currentBoid, ref separationVelocity, ref separationCount);
+        NormalizeVelocity(currentBoid, ref alignmentVelocity, ref alignmentCount);
+        if(cohesionCount > 0)
+        {
+            cohesionVelocity /= cohesionCount;
+            cohesionVelocity = Seek(cohesionVelocity, currentBoid);
+        }
+        return separationVelocity + alignmentVelocity + cohesionVelocity;
     }
 
-    private Vector3 Align(int currentBoidIndex)
+    private void AccumulateVelocity(
+        float distance,
+        float desiredDistance,
+        BoidComponent currentBoid, 
+        BoidComponent otherBoid, 
+        ref Vector3 accumulatedVelocity,
+        ref int count
+    )
     {
-        var currentBoid = Boids[currentBoidIndex];
-        var alignmentVelocity = Vector3.Zero;
-        var alignmentCount = 0;
-        for (var j = 0; j < Boids.Length; j++)
+        if (distance > 0 && distance < desiredDistance)
         {
-            if (currentBoidIndex == j) continue;
-            var otherBoid = Boids[j];
-            var dist = currentBoid.Position.DistanceSquaredTo(otherBoid.Position);
-            if (dist > 0 && dist < NeighborDistanceSquared)
-            {
-                alignmentVelocity += otherBoid.Velocity;
-                alignmentCount++;
-            }
+            var diff = (currentBoid.Position - otherBoid.Position).Normalized() / distance;
+            accumulatedVelocity += diff;
+            count++;
         }
-        
-        if (alignmentCount > 0)
-        {
-            alignmentVelocity /= alignmentCount;
-            alignmentVelocity = alignmentVelocity.Normalized() * MaxSpeed;
-            alignmentVelocity -= currentBoid.Velocity;
-            alignmentVelocity = alignmentVelocity.LimitLength(MaxForce);
-        }
-
-        return alignmentVelocity;
     }
-    
-    private Vector3 Cohere(int currentBoidIndex)
-    {
-        var currentBoid = Boids[currentBoidIndex];
-        var cohereVelocity = Vector3.Zero;
-        var cohereCount = 0;
-        for (var j = 0; j < Boids.Length; j++)
-        {
-            if (currentBoidIndex == j) continue;
-            var otherBoid = Boids[j];
-            var dist = currentBoid.Position.DistanceSquaredTo(otherBoid.Position);
-            if (dist > 0 && dist < NeighborDistanceSquared)
-            {
-                cohereVelocity += otherBoid.Position;
-                cohereCount++;
-            }
-        }
-        
-        if (cohereCount > 0)
-        {
-            cohereVelocity /= cohereCount;
-            cohereVelocity = Seek(cohereVelocity, currentBoid);
-        }
 
-        return cohereVelocity;
+    private void NormalizeVelocity(
+        BoidComponent currentBoid, 
+        ref Vector3 velocity, 
+        ref int separationCount
+    )
+    {
+        if (velocity.Length() > 0)
+        {
+            velocity /= separationCount;
+            velocity = velocity.Normalized() * _maxSpeed;
+            velocity -= currentBoid.Velocity;
+            velocity = velocity.LimitLength(_maxForce);
+        }
     }
     
     private Vector3 Seek(Vector3 target, BoidComponent currentBoidComponent)
     {
-        var desired = (target - currentBoidComponent.Position).Normalized() * MaxSpeed;
+        var desired = (target - currentBoidComponent.Position).Normalized() * _maxSpeed;
         var currentVel = currentBoidComponent.Velocity;
         var steer = desired - currentVel;
-        steer = steer.LimitLength(MaxForce);
+        steer = steer.LimitLength(_maxForce);
         return steer;
     }
 }

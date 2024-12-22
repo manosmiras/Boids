@@ -1,17 +1,8 @@
-[gd_scene load_steps=9 format=3 uid="uid://dkn1jlfvehcd8"]
+[gd_scene load_steps=7 format=3 uid="uid://dkn1jlfvehcd8"]
 
 [ext_resource type="Script" path="res://Scripts/Main.cs" id="1_y2h0i"]
 [ext_resource type="Script" path="res://Scripts/FpsLabel.cs" id="2_gw580"]
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_i1d7a"]
-size = Vector3(100, 1, 100)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fckp6"]
-albedo_color = Color(0.385493, 0.385492, 0.385492, 1)
-
-[sub_resource type="BoxMesh" id="BoxMesh_1lriw"]
-material = SubResource("StandardMaterial3D_fckp6")
-size = Vector3(100, 1, 100)
+[ext_resource type="PackedScene" uid="uid://baq3mefssbevx" path="res://BoidSimulation.tscn" id="3_3hhvb"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ygyq8"]
 
@@ -25,15 +16,6 @@ ambient_light_source = 3
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1_y2h0i")
-_flockSize = 500
-
-[node name="StaticBody3D" type="StaticBody3D" parent="."]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
-shape = SubResource("BoxShape3D_i1d7a")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D/CollisionShape3D"]
-mesh = SubResource("BoxMesh_1lriw")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 81.6912, 0)
@@ -62,3 +44,6 @@ offset_right = 20.0
 offset_bottom = 23.0
 grow_horizontal = 2
 script = ExtResource("2_gw580")
+
+[node name="BoidSimulation" parent="." instance=ExtResource("3_3hhvb")]
+_flockSize = 500

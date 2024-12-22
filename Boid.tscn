@@ -1,6 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://byxnm5tmp038x"]
-
-[ext_resource type="Script" path="res://Scripts/Nodes/Boid.cs" id="1_nyvhf"]
+[gd_scene load_steps=4 format=3 uid="uid://byxnm5tmp038x"]
 
 [sub_resource type="SphereMesh" id="SphereMesh_m1myn"]
 
@@ -14,7 +12,6 @@ shape = 0
 size = 0.194
 
 [node name="Boid" type="Node3D"]
-script = ExtResource("1_nyvhf")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 mesh = SubResource("SphereMesh_m1myn")
