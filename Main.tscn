@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://Scripts/Main.cs" id="1_y2h0i"]
 [ext_resource type="Script" path="res://Scripts/FpsLabel.cs" id="2_gw580"]
 [ext_resource type="PackedScene" uid="uid://baq3mefssbevx" path="res://BoidSimulation.tscn" id="3_3hhvb"]
-[ext_resource type="ArrayMesh" uid="uid://j67lor4m4tyc" path="res://Meshes/Fish.res" id="4_mboe1"]
+[ext_resource type="PackedScene" uid="uid://csujv6bwg65o5" path="res://Camera.tscn" id="5_6wixe"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ygyq8"]
 
@@ -19,14 +19,11 @@ fog_enabled = true
 fog_light_color = Color(1, 1, 1, 1)
 volumetric_fog_enabled = true
 volumetric_fog_density = 0.0194
-volumetric_fog_albedo = Color(0.282986, 0.538978, 0.758429, 1)
-volumetric_fog_emission = Color(0.227511, 0.631193, 0.79032, 1)
+volumetric_fog_albedo = Color(0.184878, 0.398611, 0.578555, 1)
+volumetric_fog_emission = Color(0.0885242, 0.582761, 0.907723, 1)
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1_y2h0i")
-
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 81.6912, 0)
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_x1thy")
@@ -89,6 +86,5 @@ _boundaryThreshold = 5.0
 _minBounds = Vector3(-100, -100, -100)
 _maxBounds = Vector3(100, 100, 100)
 
-[node name="Fish" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, -4)
-mesh = ExtResource("4_mboe1")
+[node name="Camera" parent="." instance=ExtResource("5_6wixe")]
+_moveSpeed = 20.0
