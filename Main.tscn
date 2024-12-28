@@ -1,7 +1,7 @@
 [gd_scene load_steps=8 format=3 uid="uid://dkn1jlfvehcd8"]
 
-[ext_resource type="Script" path="res://Scripts/Main.cs" id="1_y2h0i"]
 [ext_resource type="Script" path="res://Scripts/FpsLabel.cs" id="2_gw580"]
+[ext_resource type="Script" path="res://Scripts/UI.cs" id="2_qbfj0"]
 [ext_resource type="PackedScene" uid="uid://baq3mefssbevx" path="res://BoidSimulation.tscn" id="3_3hhvb"]
 [ext_resource type="PackedScene" uid="uid://csujv6bwg65o5" path="res://Camera.tscn" id="5_6wixe"]
 
@@ -15,15 +15,12 @@ background_mode = 1
 background_color = Color(0.219608, 0.435294, 0.6, 1)
 sky = SubResource("Sky_21kg6")
 ambient_light_source = 3
-fog_enabled = true
 fog_light_color = Color(1, 1, 1, 1)
-volumetric_fog_enabled = true
 volumetric_fog_density = 0.0194
 volumetric_fog_albedo = Color(0.184878, 0.398611, 0.578555, 1)
 volumetric_fog_emission = Color(0.0885242, 0.582761, 0.907723, 1)
 
 [node name="Main" type="Node3D"]
-script = ExtResource("1_y2h0i")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_x1thy")
@@ -31,13 +28,24 @@ environment = SubResource("Environment_x1thy")
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.397148, 0.917755, 7.629e-10, 0.00800884, -0.00346574, 0.999962, 0.91772, -0.397133, -0.00872656, 0, 0, 0)
 
-[node name="UI" type="Control" parent="."]
+[node name="UI" type="Control" parent="." node_paths=PackedStringArray("_boidSimulation", "_minSeparationDistance", "_separationFactor", "_alignmentFactor", "_cohesionFactor", "_visualRange", "_maxSpeed", "_xBounds", "_yBounds", "_zBounds")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("2_qbfj0")
+_boidSimulation = NodePath("../BoidSimulation")
+_minSeparationDistance = NodePath("Controls/MinSeparationDistanceValue")
+_separationFactor = NodePath("Controls/SeparationFactorValue")
+_alignmentFactor = NodePath("Controls/AlignmentFactorValue")
+_cohesionFactor = NodePath("Controls/CohesionFactorValue")
+_visualRange = NodePath("Controls/VisualRangeValue")
+_maxSpeed = NodePath("Controls/MaxSpeedValue")
+_xBounds = NodePath("Controls/HBoxContainer/XValue")
+_yBounds = NodePath("Controls/HBoxContainer/YValue")
+_zBounds = NodePath("Controls/HBoxContainer/ZValue")
 
 [node name="FpsLabel" type="Label" parent="UI"]
 layout_mode = 1
@@ -55,36 +63,106 @@ layout_mode = 1
 offset_right = 200.0
 offset_bottom = 647.565
 
-[node name="CoherenceLabel" type="Label" parent="UI/Controls"]
+[node name="MinSeparationDistanceLabel" type="Label" parent="UI/Controls"]
 layout_mode = 2
-text = "Coherence"
+text = "Min Separation Distance"
 
-[node name="CoherenceSlider" type="HSlider" parent="UI/Controls"]
-layout_mode = 2
-
-[node name="SeparationLabel" type="Label" parent="UI/Controls"]
-layout_mode = 2
-text = "Separation"
-
-[node name="SeparationSlider" type="HSlider" parent="UI/Controls"]
+[node name="MinSeparationDistanceValue" type="SpinBox" parent="UI/Controls"]
 layout_mode = 2
 
-[node name="AlignmentLabel" type="Label" parent="UI/Controls"]
+[node name="SeparationFactorLabel" type="Label" parent="UI/Controls"]
 layout_mode = 2
-text = "Alignment"
+text = "Separation Factor"
 
-[node name="AlignmentSlider" type="HSlider" parent="UI/Controls"]
+[node name="SeparationFactorValue" type="SpinBox" parent="UI/Controls"]
 layout_mode = 2
+max_value = 1.0
+step = 0.01
+
+[node name="AlignmentFactorLabel" type="Label" parent="UI/Controls"]
+layout_mode = 2
+text = "Alignment Factor"
+
+[node name="AlignmentFactorValue" type="SpinBox" parent="UI/Controls"]
+layout_mode = 2
+max_value = 1.0
+step = 0.01
+
+[node name="CohesionFactorLabel" type="Label" parent="UI/Controls"]
+layout_mode = 2
+text = "Cohesion Factor"
+
+[node name="CohesionFactorValue" type="SpinBox" parent="UI/Controls"]
+layout_mode = 2
+max_value = 1.0
+step = 0.01
+
+[node name="VisualRangeLabel" type="Label" parent="UI/Controls"]
+layout_mode = 2
+text = "Visual Range"
+
+[node name="VisualRangeValue" type="SpinBox" parent="UI/Controls"]
+layout_mode = 2
+step = 0.01
+
+[node name="MaxSpeedLabel" type="Label" parent="UI/Controls"]
+layout_mode = 2
+text = "Max Speed"
+
+[node name="MaxSpeedValue" type="SpinBox" parent="UI/Controls"]
+layout_mode = 2
+max_value = 10.0
+step = 0.01
+
+[node name="BoundsLabel" type="Label" parent="UI/Controls"]
+layout_mode = 2
+text = "Bounds"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/Controls"]
+layout_mode = 2
+
+[node name="XLabel" type="Label" parent="UI/Controls/HBoxContainer"]
+layout_mode = 2
+text = "X"
+
+[node name="XValue" type="SpinBox" parent="UI/Controls/HBoxContainer"]
+layout_mode = 2
+max_value = 1000.0
+
+[node name="YLabel" type="Label" parent="UI/Controls/HBoxContainer"]
+layout_mode = 2
+text = "Y"
+
+[node name="YValue" type="SpinBox" parent="UI/Controls/HBoxContainer"]
+layout_mode = 2
+max_value = 1000.0
+
+[node name="ZLabel" type="Label" parent="UI/Controls/HBoxContainer"]
+layout_mode = 2
+text = "Z"
+
+[node name="ZValue" type="SpinBox" parent="UI/Controls/HBoxContainer"]
+layout_mode = 2
+max_value = 1000.0
+
+[node name="Button" type="Button" parent="UI/Controls"]
+layout_mode = 2
+text = "Apply"
 
 [node name="BoidSimulation" parent="." instance=ExtResource("3_3hhvb")]
-_maxSpeed = 10.0
-_desiredSeparation = 20.0
-_desiredAlignment = 10.0
-_desiredCoherence = 10.0
-_flockSize = 1500
-_boundaryThreshold = 5.0
-_minBounds = Vector3(-100, -100, -100)
-_maxBounds = Vector3(100, 100, 100)
+MinSeparationDistance = 5.0
+Bounds = Vector3(50, 25, 50)
+_flockSize = 1000
 
 [node name="Camera" parent="." instance=ExtResource("5_6wixe")]
-_moveSpeed = 20.0
+_moveSpeed = 200.0
+
+[connection signal="value_changed" from="UI/Controls/MinSeparationDistanceValue" to="UI" method="OnMinSeparationDistanceChanged"]
+[connection signal="value_changed" from="UI/Controls/SeparationFactorValue" to="UI" method="OnSeparationFactorChanged"]
+[connection signal="value_changed" from="UI/Controls/AlignmentFactorValue" to="UI" method="OnAlignmentFactorChanged"]
+[connection signal="value_changed" from="UI/Controls/CohesionFactorValue" to="UI" method="OnCohesionFactorChanged"]
+[connection signal="value_changed" from="UI/Controls/VisualRangeValue" to="UI" method="OnVisualRangeChanged"]
+[connection signal="value_changed" from="UI/Controls/MaxSpeedValue" to="UI" method="OnMaxSpeedChanged"]
+[connection signal="value_changed" from="UI/Controls/HBoxContainer/XValue" to="UI" method="OnXBoundsChanged"]
+[connection signal="value_changed" from="UI/Controls/HBoxContainer/YValue" to="UI" method="OnYBoundsChanged"]
+[connection signal="value_changed" from="UI/Controls/HBoxContainer/ZValue" to="UI" method="OnZBoundsChanged"]

@@ -12,12 +12,12 @@ public partial class CameraController : Node3D
     private float _pitch = 0f;
     private float _yaw   = 0f;
 
-    public override void _Ready()
+    /*public override void _Ready()
     {
         Input.MouseMode = Input.MouseModeEnum.Captured;
-    }
+    }*/
 
-    public override void _Input(InputEvent @event)
+    /*public override void _Input(InputEvent @event)
     {
         // Capture raw mouse movement
         if (@event is InputEventMouseMotion mouseMotion)
@@ -35,13 +35,12 @@ public partial class CameraController : Node3D
             }
             _mouseDelta = mouseMotion.Relative;
         }
-    }
+    }*/
 
     public override void _Process(double delta)
     {
         var inputDirection = Input.GetVector("MoveLeft", "MoveRight", "MoveForward", "MoveBackward");
         var upDown = Input.GetAxis("MoveDown", "MoveUp");
-        GD.Print(upDown);
         var direction = _camera.Basis * new Vector3(inputDirection.X, upDown, inputDirection.Y).Normalized();
         Translate(direction * _moveSpeed * (float)delta);
     }
