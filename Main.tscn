@@ -7,13 +7,13 @@
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ygyq8"]
 
-[sub_resource type="Sky" id="Sky_21kg6"]
+[sub_resource type="Sky" id="Sky_7wjwh"]
 sky_material = SubResource("ProceduralSkyMaterial_ygyq8")
 
 [sub_resource type="Environment" id="Environment_x1thy"]
 background_mode = 1
 background_color = Color(0.219608, 0.435294, 0.6, 1)
-sky = SubResource("Sky_21kg6")
+sky = SubResource("Sky_7wjwh")
 ambient_light_source = 3
 fog_light_color = Color(1, 1, 1, 1)
 volumetric_fog_density = 0.0194
@@ -151,8 +151,11 @@ text = "Apply"
 
 [node name="BoidSimulation" parent="." instance=ExtResource("3_3hhvb")]
 MinSeparationDistance = 5.0
-Bounds = Vector3(50, 25, 50)
-_flockSize = 1000
+VisualRange = 10.0
+MaxSpeed = 0.1
+Bounds = Vector3(100, 100, 100)
+_flockSize = 2000
+_boundaryThreshold = 10.0
 
 [node name="Camera" parent="." instance=ExtResource("5_6wixe")]
 _moveSpeed = 200.0

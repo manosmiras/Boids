@@ -12,12 +12,12 @@ public partial class CameraController : Node3D
     private float _pitch = 0f;
     private float _yaw   = 0f;
 
-    /*public override void _Ready()
+    public override void _Ready()
     {
         Input.MouseMode = Input.MouseModeEnum.Captured;
-    }*/
+    }
 
-    /*public override void _Input(InputEvent @event)
+    public override void _Input(InputEvent @event)
     {
         // Capture raw mouse movement
         if (@event is InputEventMouseMotion mouseMotion)
@@ -35,7 +35,7 @@ public partial class CameraController : Node3D
             }
             _mouseDelta = mouseMotion.Relative;
         }
-    }*/
+    }
 
     public override void _Process(double delta)
     {

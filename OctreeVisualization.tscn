@@ -1,0 +1,39 @@
+[gd_scene load_steps=6 format=3 uid="uid://b8i7lw7b52hqb"]
+
+[ext_resource type="Script" path="res://Scripts/OctreeVisualizer.cs" id="2_75vb5"]
+[ext_resource type="PackedScene" uid="uid://csujv6bwg65o5" path="res://Camera.tscn" id="3_witn1"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_w713t"]
+
+[sub_resource type="Sky" id="Sky_21kg6"]
+sky_material = SubResource("ProceduralSkyMaterial_w713t")
+
+[sub_resource type="Environment" id="Environment_uo7rl"]
+background_mode = 1
+background_color = Color(0.219608, 0.435294, 0.6, 1)
+sky = SubResource("Sky_21kg6")
+ambient_light_source = 3
+fog_light_color = Color(1, 1, 1, 1)
+volumetric_fog_density = 0.0194
+volumetric_fog_albedo = Color(0.184878, 0.398611, 0.578555, 1)
+volumetric_fog_emission = Color(0.0885242, 0.582761, 0.907723, 1)
+
+[node name="OctreeVisualization" type="Node3D" node_paths=PackedStringArray("_root")]
+script = ExtResource("2_75vb5")
+_root = NodePath("Node3D")
+
+[node name="Node3D" type="Node3D" parent="."]
+
+[node name="Bounds" type="MultiMeshInstance3D" parent="Node3D"]
+
+[node name="Points" type="MultiMeshInstance3D" parent="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_uo7rl")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.397148, 0.917755, 4.65038e-09, 0.00800884, -0.00346574, 0.999962, 0.91772, -0.397133, -0.00872656, 0, 0, 0)
+
+[node name="Camera" parent="." instance=ExtResource("3_witn1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1.55803)
+_moveSpeed = 50.0
