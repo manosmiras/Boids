@@ -25,6 +25,14 @@ window/vsync/vsync_mode=0
 
 project/assembly_name="Boids"
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/gdUnit4/plugin.cfg")
+
+[gdunit4]
+
+settings/test/test_discovery=true
+
 [input]
 
 MoveLeft={
