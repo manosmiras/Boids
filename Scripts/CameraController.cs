@@ -7,6 +7,7 @@ public partial class CameraController : Node3D
     [Export] private float _moveSpeed = 5f;
     [Export] private float _mouseSensitivity = 0.15f;
     [Export] private Camera3D _camera;
+    [Export] private bool _cameraRotation = false;
     private Vector2 _mouseDelta;
     
     private float _pitch = 0f;
@@ -14,13 +15,14 @@ public partial class CameraController : Node3D
 
     public override void _Ready()
     {
-        Input.MouseMode = Input.MouseModeEnum.Captured;
+        if(_cameraRotation)
+            Input.MouseMode = Input.MouseModeEnum.Captured;
     }
 
     public override void _Input(InputEvent @event)
     {
         // Capture raw mouse movement
-        if (@event is InputEventMouseMotion mouseMotion)
+        if (_cameraRotation && @event is InputEventMouseMotion mouseMotion)
         {
             if (@event is InputEventMouseMotion motion)
             {

@@ -4,17 +4,16 @@ using Godot;
 
 namespace Boids.Scripts;
 
-// TODO: Spatial partitioning
 public partial class BoidSimulation : Node
 {
-    [Export] public float MinSeparationDistance = 10f;
-    [Export] public float SeparationFactor = 0.05f;
-    [Export] public float AlignmentFactor = 0.05f;
-    [Export] public float CohesionFactor = 0.05f;
+    [Export] public float MinSeparationDistance = 5f;
+    [Export] public float SeparationFactor = 0.25f;
+    [Export] public float AlignmentFactor = 0.5f;
+    [Export] public float CohesionFactor = 0.75f;
     [Export] public float VisualRange = 25f;
-    [Export] public float MaxSpeed = 0.1f;
-    [Export] public Vector3 SimulationBounds = new(10000f, 10000f, 10000f);
-    [Export] public Vector3 SpawnBounds = new(50f, 50f, 50f);
+    [Export] public float MaxSpeed = 0.04f;
+    [Export] public Vector3 SimulationBounds = new(1000f, 1000f, 1000f);
+    [Export] public Vector3 SpawnBounds = new(100f, 100f, 100f);
     
     [Export] private int _flockSize = 1000;
     [Export] private float _boundaryThreshold = 100f;
@@ -26,7 +25,7 @@ public partial class BoidSimulation : Node
 
     public override void _Ready()
     {
-        _octree = new Octree<Boid>(Vector3.Zero, SimulationBounds, 20);
+        _octree = new Octree<Boid>(Vector3.Zero, SimulationBounds, 50);
         _boids = new Boid[_flockSize];
         for (ushort i = 0; i < _flockSize; i++)
         {
@@ -102,18 +101,7 @@ public partial class BoidSimulation : Node
             var diff = _boids[i].Position - nearbyBoid.Position;
             velocity += diff;
         }
-        
-        /*for (var j = 0; j < _boids.Length; j++)
-        {
-            if(i == j) continue;
-            var distance = _boids[i].Position.DistanceTo(_boids[j].Position);
-            if (distance < MinSeparationDistance)
-            {
-                var diff = _boids[i].Position - _boids[j].Position;
-                velocity += diff;
-            }
-        }*/
-        return velocity * SeparationFactor;
+        return velocity.Normalized() * SeparationFactor;
     }
     
     private Vector3 MatchVelocity(int i, List<Boid> nearbyBoids)
@@ -121,24 +109,12 @@ public partial class BoidSimulation : Node
         var velocity = Vector3.Zero;
         var neighbourCount = 0;
         
-        // TODO: Make the octree take in a generic type so I can pass the boid itself
         foreach (var nearbyBoid in nearbyBoids)
         {
             if(_boids[i].Id == nearbyBoid.Id) continue;
             velocity += nearbyBoid.Velocity;
             neighbourCount++;
         }
-        
-        /*for (var j = 0; j < _boids.Length; j++)
-        {
-            if(i == j) continue;
-            var distance = _boids[i].Position.DistanceTo(_boids[j].Position);
-            if (distance < VisualRange)
-            {
-                velocity += _boids[j].Velocity;
-                neighbourCount++;
-            }
-        }*/
         if (neighbourCount == 0)
             return Vector3.Zero;
         velocity /= neighbourCount;
@@ -156,22 +132,11 @@ public partial class BoidSimulation : Node
             velocity += nearbyBoid.Position;
             neighbourCount++;
         }
-        
-        /*for (var j = 0; j < _boids.Length; j++)
-        {
-            if(i == j) continue;
-            var distance = _boids[i].Position.DistanceTo(_boids[j].Position);
-            if (distance < VisualRange)
-            {
-                velocity += _boids[j].Position;
-                neighbourCount++;
-            }
-        }*/
         if (neighbourCount == 0)
             return Vector3.Zero;
         velocity /= neighbourCount;
         var desired = velocity - _boids[i].Position;
-        return desired.Normalized() * MaxSpeed;
+        return desired.Normalized() * CohesionFactor;
     }
     
     private Vector3 LimitSpeed(Vector3 velocity)

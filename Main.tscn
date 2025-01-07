@@ -65,41 +65,41 @@ offset_bottom = 647.565
 
 [node name="MinSeparationDistanceLabel" type="Label" parent="UI/Controls"]
 layout_mode = 2
-text = "Min Separation Distance"
+text = "Min Separation Distance (0-100)"
 
 [node name="MinSeparationDistanceValue" type="SpinBox" parent="UI/Controls"]
 layout_mode = 2
 
 [node name="SeparationFactorLabel" type="Label" parent="UI/Controls"]
 layout_mode = 2
-text = "Separation Factor"
+text = "Separation Factor (0-10)"
 
 [node name="SeparationFactorValue" type="SpinBox" parent="UI/Controls"]
 layout_mode = 2
-max_value = 1.0
+max_value = 10.0
 step = 0.01
 
 [node name="AlignmentFactorLabel" type="Label" parent="UI/Controls"]
 layout_mode = 2
-text = "Alignment Factor"
+text = "Alignment Factor (0-10)"
 
 [node name="AlignmentFactorValue" type="SpinBox" parent="UI/Controls"]
 layout_mode = 2
-max_value = 1.0
+max_value = 10.0
 step = 0.01
 
 [node name="CohesionFactorLabel" type="Label" parent="UI/Controls"]
 layout_mode = 2
-text = "Cohesion Factor"
+text = "Cohesion Factor (0-10)"
 
 [node name="CohesionFactorValue" type="SpinBox" parent="UI/Controls"]
 layout_mode = 2
-max_value = 1.0
+max_value = 10.0
 step = 0.01
 
 [node name="VisualRangeLabel" type="Label" parent="UI/Controls"]
 layout_mode = 2
-text = "Visual Range"
+text = "Visual Range (0-100)"
 
 [node name="VisualRangeValue" type="SpinBox" parent="UI/Controls"]
 layout_mode = 2
@@ -107,7 +107,7 @@ step = 0.01
 
 [node name="MaxSpeedLabel" type="Label" parent="UI/Controls"]
 layout_mode = 2
-text = "Max Speed"
+text = "Max Speed (0-10)"
 
 [node name="MaxSpeedValue" type="SpinBox" parent="UI/Controls"]
 layout_mode = 2
@@ -116,7 +116,7 @@ step = 0.01
 
 [node name="BoundsLabel" type="Label" parent="UI/Controls"]
 layout_mode = 2
-text = "Bounds"
+text = "Bounds (0-1000)"
 
 [node name="HBoxContainer" type="HBoxContainer" parent="UI/Controls"]
 layout_mode = 2
@@ -127,7 +127,7 @@ text = "X"
 
 [node name="XValue" type="SpinBox" parent="UI/Controls/HBoxContainer"]
 layout_mode = 2
-max_value = 1000.0
+max_value = 10000.0
 
 [node name="YLabel" type="Label" parent="UI/Controls/HBoxContainer"]
 layout_mode = 2
@@ -135,7 +135,7 @@ text = "Y"
 
 [node name="YValue" type="SpinBox" parent="UI/Controls/HBoxContainer"]
 layout_mode = 2
-max_value = 1000.0
+max_value = 10000.0
 
 [node name="ZLabel" type="Label" parent="UI/Controls/HBoxContainer"]
 layout_mode = 2
@@ -143,17 +143,14 @@ text = "Z"
 
 [node name="ZValue" type="SpinBox" parent="UI/Controls/HBoxContainer"]
 layout_mode = 2
-max_value = 1000.0
+max_value = 10000.0
 
 [node name="Button" type="Button" parent="UI/Controls"]
 layout_mode = 2
 text = "Apply"
 
 [node name="BoidSimulation" parent="." instance=ExtResource("3_3hhvb")]
-MinSeparationDistance = 5.0
-AlignmentFactor = 1.0
-CohesionFactor = 1.0
-VisualRange = 50.0
+_flockSize = 200
 
 [node name="Camera" parent="." instance=ExtResource("5_6wixe")]
 _moveSpeed = 200.0
