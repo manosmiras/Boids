@@ -12,30 +12,32 @@ public partial class BoidSimulation : Node
     [Export] public float AlignmentFactor = 0.05f;
     [Export] public float CohesionFactor = 0.05f;
     [Export] public float VisualRange = 25f;
-    [Export] public float MaxSpeed = 0.4f;
-    [Export] public Vector3 Bounds = new(25f, 25f, 25f);
+    [Export] public float MaxSpeed = 0.1f;
+    [Export] public Vector3 SimulationBounds = new(10000f, 10000f, 10000f);
+    [Export] public Vector3 SpawnBounds = new(50f, 50f, 50f);
     
     [Export] private int _flockSize = 1000;
-    [Export] private float _boundaryThreshold = 0f;
+    [Export] private float _boundaryThreshold = 100f;
     
     private Boid[] _boids;
     private MultiMeshInstance3D _multiMeshInstance;
     private MultiMesh _multiMesh;
-    private Octree _octree;
+    private Octree<Boid> _octree;
 
     public override void _Ready()
     {
-        _octree = new Octree(Vector3.Zero, Bounds, 20);
+        _octree = new Octree<Boid>(Vector3.Zero, SimulationBounds, 20);
         _boids = new Boid[_flockSize];
-        for (var i = 0; i < _flockSize; i++)
+        for (ushort i = 0; i < _flockSize; i++)
         {
             var position = new Vector3(
-                (float)GD.RandRange(-Bounds.X * .3f, Bounds.X * .3f),
-                (float)GD.RandRange(-Bounds.Y * .3f, Bounds.Y * .3f),
-                (float)GD.RandRange(-Bounds.Z * .3f, Bounds.Z * .3f)
+                (float)GD.RandRange(-SpawnBounds.X * .5f, SpawnBounds.X * .5f),
+                (float)GD.RandRange(-SpawnBounds.Y * .5f, SpawnBounds.Y * .5f),
+                (float)GD.RandRange(-SpawnBounds.Z * .5f, SpawnBounds.Z * .5f)
             );
             _boids[i] = new Boid
             {
+                Id = i,
                 Position = position,
                 Velocity = new Vector3(
                     (float)GD.RandRange(-MaxSpeed, MaxSpeed),
@@ -43,7 +45,7 @@ public partial class BoidSimulation : Node
                     (float)GD.RandRange(-MaxSpeed, MaxSpeed)
                 )
             };
-            _octree.Insert(point: position);
+            _octree.Insert(_boids[i]);
         }
         var boidScene = GD.Load<PackedScene>("res://Boid.tscn");
         _multiMeshInstance = boidScene.Instantiate<MultiMeshInstance3D>();
@@ -70,10 +72,13 @@ public partial class BoidSimulation : Node
         Parallel.For(0, _boids.Length, i =>
         {
             _boids[i].Velocity += CalculateVelocities(i) * delta;
-            var oldPosition = _boids[i].Position;
-            var newPosition = _boids[i].Position + _boids[i].Velocity;
-            _octree.Update(oldPosition, newPosition);
-            _boids[i].Position = newPosition;
+            var previous = _boids[i];
+            var updated = previous with {Position = previous.Position + previous.Velocity};
+            //if (IsWithinBounds(updated.Position))
+            //{
+                _octree.Update(previous, updated);
+                _boids[i] = updated;
+            //}
         });
     }
 
@@ -81,20 +86,20 @@ public partial class BoidSimulation : Node
     {
         var boidsInVisualRange = _octree.Query(_boids[i].Position, Vector3.One * VisualRange * 0.5f);
         var boidsInMinSeparationRange = _octree.Query(_boids[i].Position, Vector3.One * MinSeparationDistance * 0.5f);
-        //GD.Print($"Nearby boid count: {nearbyBoidPositions.Count}");
         var separation = AvoidOthers(i, boidsInMinSeparationRange);
-        //var alignment = MatchVelocity(i, boidsInVisualRange);
+        var alignment = MatchVelocity(i, boidsInVisualRange);
         var cohesion = GoTowardsCenter(i, boidsInVisualRange);
-        var bounds = KeepWithinBounds(i);
-        return LimitSpeed(separation + /*alignment +*/ cohesion + bounds);
+        var velocity = LimitSpeed(separation + alignment + cohesion);
+        return KeepWithinBounds(i, velocity);
     }
     
-    private Vector3 AvoidOthers(int i, List<Vector3> nearbyBoidPositions)
+    private Vector3 AvoidOthers(int i, List<Boid> nearbyBoids)
     {
         var velocity = Vector3.Zero;
-        foreach (var nearbyBoidPosition in nearbyBoidPositions)
+        foreach (var nearbyBoid in nearbyBoids)
         {
-            var diff = _boids[i].Position - nearbyBoidPosition;
+            if(_boids[i].Id == nearbyBoid.Id) continue;
+            var diff = _boids[i].Position - nearbyBoid.Position;
             velocity += diff;
         }
         
@@ -111,19 +116,20 @@ public partial class BoidSimulation : Node
         return velocity * SeparationFactor;
     }
     
-    private Vector3 MatchVelocity(int i, List<Vector3> nearbyBoidPositions)
+    private Vector3 MatchVelocity(int i, List<Boid> nearbyBoids)
     {
         var velocity = Vector3.Zero;
         var neighbourCount = 0;
         
         // TODO: Make the octree take in a generic type so I can pass the boid itself
-        /*foreach (var nearbyBoidPosition in nearbyBoidPositions)
+        foreach (var nearbyBoid in nearbyBoids)
         {
-            var diff = _boids[i].Position - nearbyBoidPosition;
-            velocity += diff;
-        }*/
+            if(_boids[i].Id == nearbyBoid.Id) continue;
+            velocity += nearbyBoid.Velocity;
+            neighbourCount++;
+        }
         
-        for (var j = 0; j < _boids.Length; j++)
+        /*for (var j = 0; j < _boids.Length; j++)
         {
             if(i == j) continue;
             var distance = _boids[i].Position.DistanceTo(_boids[j].Position);
@@ -132,21 +138,22 @@ public partial class BoidSimulation : Node
                 velocity += _boids[j].Velocity;
                 neighbourCount++;
             }
-        }
+        }*/
         if (neighbourCount == 0)
             return Vector3.Zero;
         velocity /= neighbourCount;
         return (velocity - _boids[i].Velocity) * AlignmentFactor;
     }
     
-    private Vector3 GoTowardsCenter(int i, List<Vector3> nearbyBoidPositions)
+    private Vector3 GoTowardsCenter(int i, List<Boid> nearbyBoids)
     {
         var velocity = Vector3.Zero;
         var neighbourCount = 0;
         
-        foreach (var nearbyBoidPosition in nearbyBoidPositions)
+        foreach (var nearbyBoid in nearbyBoids)
         {
-            velocity += nearbyBoidPosition;
+            if(_boids[i].Id == nearbyBoid.Id) continue;
+            velocity += nearbyBoid.Position;
             neighbourCount++;
         }
         
@@ -177,24 +184,26 @@ public partial class BoidSimulation : Node
     }
     
     
-    private Vector3 KeepWithinBounds(int i)
+    private Vector3 KeepWithinBounds(int i, Vector3 newVelocity)
     {
-        var boid = _boids[i];
-        var velocity = Vector3.Zero;
-        var boundForce = MaxSpeed;
-        if(boid.Position.X < -Bounds.X * .5f + _boundaryThreshold)
-            velocity.X += 1;
-        if(boid.Position.X > Bounds.X * .5f - _boundaryThreshold)
-            velocity.X -= 1;
-        if(boid.Position.Y < -Bounds.Y * .5f + _boundaryThreshold)
-            velocity.Y += 1;
-        if(boid.Position.Y > Bounds.Y * .5f - _boundaryThreshold)
-            velocity.Y -= 1;
-        if(boid.Position.Z < -Bounds.Z * .5f + _boundaryThreshold)
-            velocity.Z += 1;
-        if(boid.Position.Z > Bounds.Z * .5f - _boundaryThreshold)
-            velocity.Z -= 1;
-        return velocity.Normalized() * boundForce;
+        var newPosition = _boids[i].Position + newVelocity;
+        if (newPosition.X < -SimulationBounds.X * .5f + _boundaryThreshold || newPosition.X > SimulationBounds.X * .5f - _boundaryThreshold)
+            newVelocity.X = -newVelocity.X;
+
+        if (newPosition.Y < -SimulationBounds.Y * .5f + _boundaryThreshold || newPosition.Y > SimulationBounds.Y * .5f - _boundaryThreshold)
+            newVelocity.Y = -newVelocity.Y;
+
+        if (newPosition.Z < -SimulationBounds.Z * .5f + _boundaryThreshold || newPosition.Z > SimulationBounds.Z * .5f - _boundaryThreshold)
+            newVelocity.Z = -newVelocity.Z;
+        
+        return newVelocity;
+    }
+
+    private bool IsWithinBounds(Vector3 position)
+    {
+        return position.X > -SimulationBounds.X * .5f && position.X < SimulationBounds.X * .5f &&
+               position.Y > -SimulationBounds.Y * .5f && position.Y < SimulationBounds.Y * .5f &&
+               position.Z > -SimulationBounds.Z * .5f && position.Z < SimulationBounds.Z * .5f;
     }
     
     private void UpdateVisuals()

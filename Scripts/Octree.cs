@@ -1,31 +1,32 @@
+using System;
 using System.Collections.Generic;
 using Godot;
 
 namespace Boids.Scripts;
 
-public class Octree
+public class Octree<T> where T : IPosition
 {
     public Aabb Bounds;
-    public Octree[]? Children;
-    public List<Vector3> Points;
+    public Octree<T>[]? Children;
+    public List<T> Points;
     private int _capacity;
     private readonly object _lock = new();
     
     public Octree(Vector3 center, Vector3 size, int capacity)
     {
         Bounds = new Aabb(center - size * 0.5f, size);
+        Points = new List<T>();
         _capacity = capacity;
-        Points = new List<Vector3>();
         Children = null;
     }
 
-    public bool Insert(Vector3 point)
+    public bool Insert(T point)
     {
         lock (_lock)
         {
-            if (!Bounds.HasPoint(point))
+            var hasPoint = Bounds.HasPoint(point.Position);
+            if (!hasPoint)
             {
-                //GD.Print($"Tried to insert point {point} into octree {Bounds}, FAIL");
                 return false;
             }
 
@@ -41,6 +42,7 @@ public class Octree
                 }
                 // Should never reach here
                 GD.PrintErr("Point insertion failed for ", point);
+                throw new Exception($"Failed to insert point {point.Position}");
                 return false;
             }
         
@@ -54,11 +56,11 @@ public class Octree
         }
     }
 
-    public List<Vector3> Query(Vector3 center, Vector3 size)
+    public List<T> Query(Vector3 center, Vector3 size)
     {
         lock (_lock)
         {
-            var result = new List<Vector3>();
+            var result = new List<T>();
             var bounds = new Aabb(center - size * 0.5f, size);
             if (!Bounds.Intersects(bounds))
             {
@@ -67,7 +69,7 @@ public class Octree
 
             foreach (var point in Points)
             {
-                if (Bounds.HasPoint(point))
+                if (Bounds.HasPoint(point.Position))
                 {
                     result.Add(point);
                 }
@@ -85,26 +87,28 @@ public class Octree
         }
     }
     
-    public void Update(Vector3 oldPosition, Vector3 newPosition)
+    public void Update(T oldPoint, T newPoint)
     {
         lock(_lock) 
         {
-            if (!Remove(oldPosition))
+            if (!Remove(oldPoint))
             {
-                GD.PrintErr($"Failed to remove point {oldPosition} for update.");
+                // TODO: Find why erroring out on remove
+                GD.PrintErr($"Failed to remove point {oldPoint.Position} for update.");
+                //throw new Exception("Failed to remove point for update.");
                 return;
             }
 
-            if (!Insert(newPosition))
+            if (!Insert(newPoint))
             {
-                GD.PrintErr($"Failed to insert updated point {newPosition}.");
+                GD.PrintErr($"Failed to insert updated point {newPoint.Position}.");
             }
         }
     }
 
-    private bool Remove(Vector3 point)
+    private bool Remove(T point)
     {
-        if (!Bounds.HasPoint(point))
+        if (!Bounds.HasPoint(point.Position))
         {
             return false;
         }
@@ -122,8 +126,10 @@ public class Octree
 
             return false;
         }
-
-        return Points.Remove(point);
+        
+        var index = Points.FindIndex(p => p.Position == point.Position);
+        Points.RemoveAt(index);
+        return true;
     }
     
     private void CollapseIfEmpty()
@@ -151,7 +157,7 @@ public class Octree
     private void Subdivide()
     {
         // Create 8 children
-        Children = new Octree[8];
+        Children = new Octree<T>[8];
         var halfSize = Bounds.Size * 0.5f;
         for (var i = 0; i < 8; i++)
         {
@@ -160,7 +166,7 @@ public class Octree
                 (i & 2) == 0 ? -halfSize.Y * 0.5f : halfSize.Y * 0.5f,
                 (i & 4) == 0 ? -halfSize.Z * 0.5f : halfSize.Z * 0.5f
             );
-            Children[i] = new Octree(Bounds.GetCenter() + offset, halfSize, _capacity);
+            Children[i] = new Octree<T>(Bounds.GetCenter() + offset, halfSize, _capacity);
             //GD.Print($"Parent bounds are {Bounds}, child bounds are {Children[i].Bounds}");
         }
         // Reassign points to children
@@ -176,7 +182,7 @@ public class Octree
         Points.Clear();
     }
 
-    public int CountNodes(Octree? node = null)
+    public int CountNodes(Octree<T>? node = null)
     {
         node ??= this;
         var count = 1; // Count this node
@@ -191,7 +197,7 @@ public class Octree
         return count;
     }
 
-    public int CountPoints(Octree? node = null)
+    public int CountPoints(Octree<T>? node = null)
     {
         node ??= this;
         var count = node.Points.Count;

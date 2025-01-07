@@ -1,9 +1,23 @@
+using System;
 using Godot;
 
 namespace Boids.Scripts;
 
-public struct Boid
+public struct Boid : IPosition
 {
-    public Vector3 Position;
-    public Vector3 Velocity;
+    public ushort Id
+    {
+        get;
+        set;
+    }
+    public Vector3 Position
+    {
+        get;
+        set;
+    }
+    public Vector3 Velocity
+    {
+        get;
+        set;
+    }
 }

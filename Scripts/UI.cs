@@ -23,9 +23,9 @@ public partial class UI : Node
 		_cohesionFactor.Value = _boidSimulation.CohesionFactor;
 		_visualRange.Value = _boidSimulation.VisualRange;
 		_maxSpeed.Value = _boidSimulation.MaxSpeed;
-		_xBounds.Value = _boidSimulation.Bounds.X;
-		_yBounds.Value = _boidSimulation.Bounds.Y;
-		_zBounds.Value = _boidSimulation.Bounds.Z;
+		_xBounds.Value = _boidSimulation.SimulationBounds.X;
+		_yBounds.Value = _boidSimulation.SimulationBounds.Y;
+		_zBounds.Value = _boidSimulation.SimulationBounds.Z;
 	}
 	
 	private void OnMinSeparationDistanceChanged(float value)
@@ -60,16 +60,16 @@ public partial class UI : Node
 	
 	private void OnXBoundsChanged(float value)
 	{
-		_boidSimulation.Bounds.X = value;
+		_boidSimulation.SimulationBounds.X = value;
 	}
 	
 	private void OnYBoundsChanged(float value)
 	{
-		_boidSimulation.Bounds.Y = value;
+		_boidSimulation.SimulationBounds.Y = value;
 	}
 	
 	private void OnZBoundsChanged(float value)
 	{
-		_boidSimulation.Bounds.Z = value;
+		_boidSimulation.SimulationBounds.Z = value;
 	}
 }

@@ -5,7 +5,7 @@ namespace Boids.Scripts;
 
 public partial class OctreeVisualizer : Node3D
 {
-    [Export] private Node3D _root;
+    /*[Export] private Node3D _root;
     [Export] private Vector3 _size = new(25f, 25f, 25f);
     [Export] private int _capacity = 5;
     [Export] private int _pointCount = 40;
@@ -94,5 +94,5 @@ public partial class OctreeVisualizer : Node3D
         cube.Scale = scale;
         AddChild(cube);
         _boundVisuals.Add(cube);
-    }
+    }*/
 }

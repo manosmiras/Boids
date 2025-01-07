@@ -18,9 +18,8 @@ volumetric_fog_density = 0.0194
 volumetric_fog_albedo = Color(0.184878, 0.398611, 0.578555, 1)
 volumetric_fog_emission = Color(0.0885242, 0.582761, 0.907723, 1)
 
-[node name="OctreeVisualization" type="Node3D" node_paths=PackedStringArray("_root")]
+[node name="OctreeVisualization" type="Node3D"]
 script = ExtResource("2_75vb5")
-_root = NodePath("Node3D")
 
 [node name="Node3D" type="Node3D" parent="."]
 

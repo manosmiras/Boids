@@ -151,11 +151,9 @@ text = "Apply"
 
 [node name="BoidSimulation" parent="." instance=ExtResource("3_3hhvb")]
 MinSeparationDistance = 5.0
-VisualRange = 10.0
-MaxSpeed = 0.1
-Bounds = Vector3(100, 100, 100)
-_flockSize = 2000
-_boundaryThreshold = 10.0
+AlignmentFactor = 1.0
+CohesionFactor = 1.0
+VisualRange = 50.0
 
 [node name="Camera" parent="." instance=ExtResource("5_6wixe")]
 _moveSpeed = 200.0
