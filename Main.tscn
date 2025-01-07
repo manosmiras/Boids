@@ -150,7 +150,6 @@ layout_mode = 2
 text = "Apply"
 
 [node name="BoidSimulation" parent="." instance=ExtResource("3_3hhvb")]
-_flockSize = 200
 
 [node name="Camera" parent="." instance=ExtResource("5_6wixe")]
 _moveSpeed = 200.0
