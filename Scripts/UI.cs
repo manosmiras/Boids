@@ -5,15 +5,12 @@ namespace Boids.Scripts;
 public partial class UI : Node
 {
 	[Export] private BoidSimulation _boidSimulation;
-	[Export] private SpinBox _minSeparationDistance;
-	[Export] private SpinBox _separationFactor;
-	[Export] private SpinBox _alignmentFactor;
-	[Export] private SpinBox _cohesionFactor;
-	[Export] private SpinBox _visualRange;
-	[Export] private SpinBox _maxSpeed;
-	[Export] private SpinBox _xBounds;
-	[Export] private SpinBox _yBounds;
-	[Export] private SpinBox _zBounds;
+	[Export] private Slider _minSeparationDistance;
+	[Export] private Slider _separationFactor;
+	[Export] private Slider _alignmentFactor;
+	[Export] private Slider _cohesionFactor;
+	[Export] private Slider _visualRange;
+	[Export] private Slider _maxSpeed;
 
 	public override void _Ready()
 	{
@@ -23,9 +20,6 @@ public partial class UI : Node
 		_cohesionFactor.Value = _boidSimulation.CohesionFactor;
 		_visualRange.Value = _boidSimulation.VisualRange;
 		_maxSpeed.Value = _boidSimulation.MaxSpeed;
-		_xBounds.Value = _boidSimulation.SimulationBounds.X;
-		_yBounds.Value = _boidSimulation.SimulationBounds.Y;
-		_zBounds.Value = _boidSimulation.SimulationBounds.Z;
 	}
 	
 	private void OnMinSeparationDistanceChanged(float value)
@@ -56,20 +50,5 @@ public partial class UI : Node
 	private void OnMaxSpeedChanged(float value)
 	{
 		_boidSimulation.MaxSpeed = value;
-	}
-	
-	private void OnXBoundsChanged(float value)
-	{
-		_boidSimulation.SimulationBounds.X = value;
-	}
-	
-	private void OnYBoundsChanged(float value)
-	{
-		_boidSimulation.SimulationBounds.Y = value;
-	}
-	
-	private void OnZBoundsChanged(float value)
-	{
-		_boidSimulation.SimulationBounds.Z = value;
 	}
 }
