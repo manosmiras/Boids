@@ -6,26 +6,28 @@ namespace Boids.Scripts;
 
 public partial class BoidSimulation : Node
 {
-    [Export] public float MinSeparationDistance = 5f;
-    [Export] public float SeparationFactor = 0.25f;
-    [Export] public float AlignmentFactor = 0.5f;
-    [Export] public float CohesionFactor = 0.75f;
-    [Export] public float VisualRange = 25f;
-    [Export] public float MaxSpeed = 0.04f;
-    [Export] public Vector3 SimulationBounds = new(1000f, 1000f, 1000f);
+    [Export] public float MinSeparationDistance = 25f;
+    [Export] public float SeparationFactor = 0.5f;
+    [Export] public float AlignmentFactor = 0.45f;
+    [Export] public float CohesionFactor = 0.7f;
+    [Export] public float VisualRange = 15f;
+    [Export] public float MaxSpeed = 1f;
+    [Export] public Vector3 SimulationBounds = new(500f, 500f, 500f);
     [Export] public Vector3 SpawnBounds = new(100f, 100f, 100f);
     
     [Export] private int _flockSize = 1000;
     [Export] private float _boundaryThreshold = 100f;
+    [Export] private Label _statsLabel;
     
     private Boid[] _boids;
     private MultiMeshInstance3D _multiMeshInstance;
     private MultiMesh _multiMesh;
     private Octree<Boid> _octree;
+    private float _stayInBoundsFactor = 10f;
 
     public override void _Ready()
     {
-        _octree = new Octree<Boid>(Vector3.Zero, SimulationBounds, 50);
+        _octree = new Octree<Boid>(Vector3.Zero, SimulationBounds, 10);
         _boids = new Boid[_flockSize];
         for (ushort i = 0; i < _flockSize; i++)
         {
@@ -62,23 +64,23 @@ public partial class BoidSimulation : Node
     
     public override void _Process(double delta)
     {
-        Simulate((float)delta);
+        Simulate(delta);
         UpdateVisuals();
     }
-    
-    private void Simulate(float delta)
+
+    private void Simulate(double delta)
     {
+        Parallel.For(0, _boids.Length, i => { _boids[i].Velocity += CalculateVelocities(i) * (float)delta; });
         Parallel.For(0, _boids.Length, i =>
         {
-            _boids[i].Velocity += CalculateVelocities(i) * delta;
             var previous = _boids[i];
-            var updated = previous with {Position = previous.Position + previous.Velocity};
-            //if (IsWithinBounds(updated.Position))
-            //{
-                _octree.Update(previous, updated);
-                _boids[i] = updated;
-            //}
+            var updated = previous with { Position = previous.Position + previous.Velocity };
+            _octree.Update(previous, updated);
+            _boids[i] = updated;
         });
+        var fps = Engine.GetFramesPerSecond();
+        var ms = 1000 / fps;
+        _statsLabel.Text = $"Total: {ms:0.00}ms ({fps:0} FPS)";
     }
 
     private Vector3 CalculateVelocities(int i)
@@ -89,7 +91,8 @@ public partial class BoidSimulation : Node
         var alignment = MatchVelocity(i, boidsInVisualRange);
         var cohesion = GoTowardsCenter(i, boidsInVisualRange);
         var velocity = LimitSpeed(separation + alignment + cohesion);
-        return KeepWithinBounds(i, velocity);
+        var velocityInBounds = KeepWithinBounds(i, velocity);
+        return velocityInBounds;
     }
     
     private Vector3 AvoidOthers(int i, List<Boid> nearbyBoids)
@@ -151,16 +154,31 @@ public partial class BoidSimulation : Node
     
     private Vector3 KeepWithinBounds(int i, Vector3 newVelocity)
     {
-        var newPosition = _boids[i].Position + newVelocity;
-        if (newPosition.X < -SimulationBounds.X * .5f + _boundaryThreshold || newPosition.X > SimulationBounds.X * .5f - _boundaryThreshold)
-            newVelocity.X = -newVelocity.X;
-
-        if (newPosition.Y < -SimulationBounds.Y * .5f + _boundaryThreshold || newPosition.Y > SimulationBounds.Y * .5f - _boundaryThreshold)
-            newVelocity.Y = -newVelocity.Y;
-
-        if (newPosition.Z < -SimulationBounds.Z * .5f + _boundaryThreshold || newPosition.Z > SimulationBounds.Z * .5f - _boundaryThreshold)
-            newVelocity.Z = -newVelocity.Z;
-        
+        var position = _boids[i].Position;
+        if (position.X < -SimulationBounds.X * .5f + _boundaryThreshold)
+        {
+            newVelocity.X = _stayInBoundsFactor;
+        } 
+        else if (position.X > SimulationBounds.X * .5f - _boundaryThreshold)
+        {
+            newVelocity.X = -_stayInBoundsFactor;
+        }
+        if (position.Y < -SimulationBounds.Y * .5f + _boundaryThreshold)
+        {
+            newVelocity.Y = _stayInBoundsFactor;
+        }
+        else if (position.Y > SimulationBounds.Y * .5f - _boundaryThreshold)
+        {
+            newVelocity.Y = -_stayInBoundsFactor;
+        }
+        if(position.Z < -SimulationBounds.Z * .5f + _boundaryThreshold)
+        {
+            newVelocity.Z = _stayInBoundsFactor;
+        }
+        else if (position.Z > SimulationBounds.Z * .5f - _boundaryThreshold)
+        {
+            newVelocity.Z = -_stayInBoundsFactor;
+        }
         return newVelocity;
     }
 

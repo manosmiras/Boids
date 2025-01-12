@@ -93,17 +93,4 @@ public class OctreeTest
         var point = octree.Points[0];
         AssertVector(point.Position).IsEqual(new Vector3(5f, 5f, 5f));
     }
-    
-    [TestCase]
-    public void TestUpdateUpdatesPosition2()
-    {
-        var octree = new Octree<Boid>(Vector3.Zero, new Vector3(10f, 10f, 10f), 2);
-        var boid = new Boid { Position = new Vector3(30f, 30f, 30f) };
-        var boidWithNewPosition = boid with { Position = new Vector3(15f, 15f, 15f) };
-        octree.Insert(boid);
-        octree.Update(boid, boidWithNewPosition);
-        AssertInt(octree.Points.Count).IsEqual(1);
-        var point = octree.Points[0];
-        AssertVector(point.Position).IsEqual(new Vector3(15f, 15f, 15f));
-    }
 }

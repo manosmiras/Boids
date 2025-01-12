@@ -1,6 +1,5 @@
-[gd_scene load_steps=8 format=3 uid="uid://dkn1jlfvehcd8"]
+[gd_scene load_steps=7 format=3 uid="uid://dkn1jlfvehcd8"]
 
-[ext_resource type="Script" path="res://Scripts/FpsLabel.cs" id="2_gw580"]
 [ext_resource type="Script" path="res://Scripts/UI.cs" id="2_qbfj0"]
 [ext_resource type="PackedScene" uid="uid://baq3mefssbevx" path="res://BoidSimulation.tscn" id="3_3hhvb"]
 [ext_resource type="PackedScene" uid="uid://csujv6bwg65o5" path="res://Camera.tscn" id="5_6wixe"]
@@ -47,7 +46,7 @@ _xBounds = NodePath("Controls/HBoxContainer/XValue")
 _yBounds = NodePath("Controls/HBoxContainer/YValue")
 _zBounds = NodePath("Controls/HBoxContainer/ZValue")
 
-[node name="FpsLabel" type="Label" parent="UI"]
+[node name="StatsLabel" type="Label" parent="UI"]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -56,7 +55,6 @@ offset_left = -20.0
 offset_right = 20.0
 offset_bottom = 23.0
 grow_horizontal = 2
-script = ExtResource("2_gw580")
 
 [node name="Controls" type="VBoxContainer" parent="UI"]
 layout_mode = 1
@@ -149,9 +147,11 @@ max_value = 10000.0
 layout_mode = 2
 text = "Apply"
 
-[node name="BoidSimulation" parent="." instance=ExtResource("3_3hhvb")]
+[node name="BoidSimulation" parent="." node_paths=PackedStringArray("_statsLabel") instance=ExtResource("3_3hhvb")]
+_statsLabel = NodePath("../UI/StatsLabel")
 
 [node name="Camera" parent="." instance=ExtResource("5_6wixe")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 350)
 _moveSpeed = 200.0
 
 [connection signal="value_changed" from="UI/Controls/MinSeparationDistanceValue" to="UI" method="OnMinSeparationDistanceChanged"]

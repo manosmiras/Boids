@@ -23,7 +23,7 @@ void vertex() {
 	float body = (VERTEX.z + 1.0) / 2.0; //for a fish centered at (0, 0) with a length of 2
 	//wave is a uniform float
 	VERTEX.x += cos(time + body) * wave;
-	
+
 	//twist is a uniform float
 	float twist_angle = cos(time + body) * 0.3 * twist;
 	mat2 twist_matrix = mat2(vec2(cos(twist_angle), -sin(twist_angle)), vec2(sin(twist_angle), cos(twist_angle)));
