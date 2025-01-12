@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using Godot;
@@ -36,18 +37,15 @@ public class Octree<T> where T : IPosition
                 {
                     if (child.Insert(point)) // Recursive insert
                     {
-                        //GD.Print($"Inserting {point} into octree {Bounds}, SUCCESS");
                         return true;
                     }
                 }
                 // Should never reach here
                 GD.PrintErr("Point insertion failed for ", point);
                 throw new Exception($"Failed to insert point {point.Position}");
-                return false;
             }
         
             Points.Add(point);
-            //GD.Print($"Inserting {point} into octree {Bounds}, SUCCESS");
             if (Points.Count >= _capacity)
             {
                 Subdivide();
