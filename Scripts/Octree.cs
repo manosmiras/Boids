@@ -88,9 +88,7 @@ public class Octree<T> where T : IPosition
         {
             if (!Remove(oldPoint))
             {
-                // TODO: Find why erroring out on remove
                 GD.PrintErr($"Failed to remove point {oldPoint.Position} for update.");
-                //throw new Exception("Failed to remove point for update.");
                 return;
             }
 
@@ -145,7 +143,6 @@ public class Octree<T> where T : IPosition
         if (allChildrenEmpty)
         {
             Children = null;
-            GD.Print($"Collapsed octree node at {Bounds} due to empty children.");
         }
     }
 
@@ -162,7 +159,6 @@ public class Octree<T> where T : IPosition
                 (i & 4) == 0 ? -halfSize.Z * 0.5f : halfSize.Z * 0.5f
             );
             Children[i] = new Octree<T>(Bounds.GetCenter() + offset, halfSize, _capacity);
-            //GD.Print($"Parent bounds are {Bounds}, child bounds are {Children[i].Bounds}");
         }
         // Reassign points to children
         foreach (var point in Points)
