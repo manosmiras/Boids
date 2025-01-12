@@ -69,10 +69,7 @@ public class Octree<T> where T : IPosition
 
             foreach (var point in Points)
             {
-                if (Bounds.HasPoint(point.Position))
-                {
-                    result.Add(point);
-                }
+                result.Add(point);
             }
 
             if (Children != null)
